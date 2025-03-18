@@ -2,40 +2,39 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <!-- Viewport для адаптивности на мобильных устройствах -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Тестовая площадка баннеров</title>
+  <title>Тестовая площадка баннеров РСЯ</title>
 
-  <!-- Подключение скрипта Яндекс.Рекламы -->
+  <!-- Обязательный код загрузчика Яндекс.Рекламы -->
   <script>window.yaContextCb = window.yaContextCb || []</script>
   <script src="https://yandex.ru/ads/system/context.js" async></script>
 
   <style>
-    /* Основные стили страницы */
+    /* Базовые стили страницы */
     body {
       margin: 0;
       padding: 15px;
       font-family: Arial, sans-serif;
       background: #f0f0f0;
-      min-height: 100vh; /* Минимальная высота на весь экран */
+      min-height: 100vh;
     }
 
-    /* Контейнер для контента */
+    /* Основной контейнер */
     .test-container {
-      max-width: 1200px; /* Ограничение ширины для десктопов */
-      margin: 0 auto; /* Центрирование */
+      max-width: 1200px;
+      margin: 0 auto;
       background: white;
       padding: 20px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       border-radius: 8px;
     }
 
-    /* Область для размещения баннеров */
+    /* Область для баннеров */
     .banner-frame {
-      border: 2px dashed #ccc; /* Пунктирная граница */
+      border: 2px dashed #ccc;
       margin: 20px 0;
       padding: 15px;
-      min-height: 250px; /* Минимальная высота области */
+      min-height: 250px;
       background: #fff;
       position: relative;
     }
@@ -47,8 +46,8 @@
       background: #f8f8f8;
       border-radius: 6px;
       display: flex;
-      flex-wrap: wrap; /* Перенос кнопок на мобильных */
-      gap: 10px; /* Расстояние между кнопками */
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     /* Стили кнопок */
@@ -56,18 +55,17 @@
       padding: 10px 20px;
       border: none;
       border-radius: 4px;
-      background: #007bff; /* Основной цвет */
+      background: #007bff;
       color: white;
       cursor: pointer;
-      transition: 0.3s; /* Плавное изменение цвета */
+      transition: 0.3s;
     }
 
-    /* Эффект при наведении */
     button:hover {
       background: #0056b3;
     }
 
-    /* Блок отладочной информации */
+    /* Блок отладки */
     .debug-info {
       color: #666;
       font-size: 0.9em;
@@ -76,27 +74,27 @@
       background: #f8f8f8;
       border-radius: 4px;
       max-height: 200px;
-      overflow-y: auto; /* Прокрутка при большом количестве сообщений */
+      overflow-y: auto;
     }
 
     /* Мобильная адаптация */
     @media (max-width: 768px) {
       .test-container {
-        padding: 10px; /* Уменьшенные отступы */
+        padding: 10px;
       }
 
       .banner-frame {
         margin: 10px 0;
-        min-height: 200px; /* Меньшая высота для мобилок */
+        min-height: 200px;
       }
 
       button {
-        width: 100%; /* Полная ширина кнопок */
+        width: 100%;
         margin: 5px 0;
       }
     }
 
-    /* Стили формы добавления баннера */
+    /* Стили формы */
     .banner-form {
       margin: 15px 0;
       padding: 15px;
@@ -109,21 +107,38 @@
       margin: 10px 0;
       display: flex;
       gap: 10px;
-      flex-wrap: wrap; /* Перенос полей на узких экранах */
+      flex-wrap: wrap;
+    }
+
+    .param-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      width: 100%;
+    }
+
+    .param-input {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .param-input label {
+      font-size: 0.8em;
+      color: #666;
+      margin-bottom: 3px;
     }
 
     input[type="text"] {
       padding: 8px;
       border: 1px solid #ddd;
       border-radius: 4px;
-      flex: 1; /* Растягивание на доступное пространство */
-      min-width: 200px; /* Минимальная ширина поля */
+      width: 100%;
     }
   </style>
 </head>
 <body>
 <div class="test-container">
-  <h1>Тестовая площадка баннеров</h1>
+  <h1>Тестовая площадка баннеров РСЯ</h1>
 
   <!-- Панель управления -->
   <div class="controls">
@@ -135,111 +150,135 @@
   <!-- Форма для ввода параметров -->
   <div class="banner-form" id="bannerForm" style="display: none;">
     <div class="form-row">
-      <input type="text" id="ownerId" placeholder="Owner ID (например, 391204)">
-      <input type="text" id="containerId" placeholder="Container ID (например, adfox_123)">
+      <div class="param-group">
+        <div class="param-input">
+          <label>Owner ID (обязательно)</label>
+          <input type="text" id="ownerId" placeholder="391204" required>
+        </div>
+        <div class="param-input">
+          <label>Container ID</label>
+          <input type="text" id="containerId" placeholder="adfox_123">
+        </div>
+      </div>
     </div>
+
+    <div class="form-row">
+      <div class="param-group">
+        <div class="param-input">
+          <label>Параметр p1</label>
+          <input type="text" id="paramP1" placeholder="dcokb">
+        </div>
+        <div class="param-input">
+          <label>Параметр p2</label>
+          <input type="text" id="paramP2" placeholder="jaap">
+        </div>
+        <div class="param-input">
+          <label>Параметр pfc</label>
+          <input type="text" id="paramPfc" placeholder="dzokd">
+        </div>
+        <div class="param-input">
+          <label>Параметр pfb</label>
+          <input type="text" id="paramPfb" placeholder="bghwdj">
+        </div>
+      </div>
+    </div>
+
     <div class="form-row">
       <button onclick="addNewBanner()">Создать</button>
       <button onclick="hideForm()" style="background: #dc3545;">Отмена</button>
     </div>
   </div>
 
-  <!-- Основной контейнер для баннеров -->
+  <!-- Контейнер для баннеров -->
   <div class="banner-frame" id="bannerContainer">
-    <!-- Стартовый баннер -->
     <div id="adfox_171759750909741211"></div>
   </div>
 
-  <!-- Консоль для отладки -->
+  <!-- Консоль отладки -->
   <div class="debug-info" id="debugOutput"></div>
 </div>
 
 <script>
-  // ==============================================
-  // ОСНОВНАЯ ЛОГИКА ПРИЛОЖЕНИЯ
-  // ==============================================
+  // Системные переменные
+  let bannerCounter = 1;
 
-  let bannerCounter = 1; // Счетчик созданных баннеров
-
-  // Показать форму добавления
+  // Управление интерфейсом
   function showForm() {
     document.getElementById('bannerForm').style.display = 'block';
   }
 
-  // Скрыть форму добавления
   function hideForm() {
     document.getElementById('bannerForm').style.display = 'none';
     clearForm();
   }
 
-  // Очистить поля формы
   function clearForm() {
     document.getElementById('ownerId').value = '';
     document.getElementById('containerId').value = '';
+    document.getElementById('paramP1').value = '';
+    document.getElementById('paramP2').value = '';
+    document.getElementById('paramPfc').value = '';
+    document.getElementById('paramPfb').value = '';
   }
 
-  // Основная функция создания баннера
+  // Основная логика
   function addNewBanner() {
-    const ownerId = document.getElementById('ownerId').value;
-    const containerId = document.getElementById('containerId').value || `adfox_${Date.now()}`;
+    const params = {
+      ownerId: document.getElementById('ownerId').value,
+      containerId: document.getElementById('containerId').value || `adfox_${Date.now()}`,
+      p1: document.getElementById('paramP1').value,
+      p2: document.getElementById('paramP2').value,
+      pfc: document.getElementById('paramPfc').value,
+      pfb: document.getElementById('paramPfb').value
+    };
 
-    // Валидация обязательного поля
-    if(!ownerId) {
-      alert('Введите Owner ID');
+    if (!params.ownerId) {
+      alert('Поле Owner ID обязательно для заполнения');
       return;
     }
 
-    // Создаем новый DOM-элемент
     const newBanner = document.createElement('div');
-    newBanner.id = containerId;
+    newBanner.id = params.containerId;
 
-    // Очищаем предыдущий баннер
     clearBanner();
     document.getElementById('bannerContainer').appendChild(newBanner);
 
-    // Инициализация баннера через API Яндекс.Рекламы
     window.yaContextCb.push(() => {
       try {
         Ya.adfoxCode.create({
-          ownerId: ownerId,
-          containerId: containerId,
+          ownerId: params.ownerId,
+          containerId: params.containerId,
           params: {
-            p1: 'dcokb',
-            p2: 'jaap',
-            pfc: 'dzokd',
-            pfb: 'bbgseq'
+            p1: params.p1 || 'dcokb',
+            p2: params.p2 || 'jaap',
+            pfc: params.pfc || 'dzokd',
+            pfb: params.pfb || 'bbgseq'
           }
         });
-        logMessage(`Успешно создан баннер #${bannerCounter}: ${containerId}`);
+        logMessage(`✅ Баннер #${bannerCounter} создан: ${JSON.stringify(params)}`);
         bannerCounter++;
       } catch (error) {
-        logMessage(`Ошибка: ${error.message}`);
+        logMessage(`❌ Ошибка: ${error.message}`);
       }
     });
 
     hideForm();
   }
 
-  // Очистка баннерной зоны
   function clearBanner() {
     document.getElementById('bannerContainer').innerHTML = '';
-    logMessage('Все баннеры удалены');
+    logMessage('⚠️ Все баннеры удалены');
   }
 
-  // Система логирования
   function logMessage(message) {
     const debugDiv = document.getElementById('debugOutput');
     const entry = document.createElement('div');
-    entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+    entry.innerHTML = `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
     debugDiv.appendChild(entry);
-
-    // Автопрокрутка к новым сообщениям
     debugDiv.scrollTop = debugDiv.scrollHeight;
   }
 
-  // ==============================================
-  // ИНИЦИАЛИЗАЦИЯ ПЕРВОГО БАННЕРА
-  // ==============================================
+  // Инициализация демо-баннера
   window.yaContextCb.push(() => {
     try {
       Ya.adfoxCode.create({
@@ -252,9 +291,9 @@
           pfb: 'bbgseq'
         }
       });
-      logMessage('Стартовый баннер успешно загружен');
+      logMessage('🎉 Демо-баннер успешно загружен');
     } catch (error) {
-      logMessage(`Ошибка инициализации: ${error.message}`);
+      logMessage(`⛔ Ошибка инициализации: ${error.message}`);
     }
   });
 </script>
