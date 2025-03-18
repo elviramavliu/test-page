@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Тестовая площадка баннеров</title>
+  <script>window.yaContextCb = window.yaContextCb || []</script>
+  <script src="https://yandex.ru/ads/system/context.js" async></script>
+  <style>
+    /* Упрощенные стили для тестовой среды */
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+    }
+
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .banner-frame {
+      border: 2px dashed #ccc;
+      margin: 20px 0;
+      padding: 15px;
+      min-height: 300px;
+      background: #fff;
+    }
+
+    .controls {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f8f8;
+    }
+
+    button {
+      padding: 8px 15px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .debug-info {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+<div class="test-container">
+  <h1>Тестовая площадка баннеров</h1>
+
+  <div class="controls">
+    <button onclick="location.reload()">Перезагрузить страницу</button>
+    <button onclick="clearBanner()">Очистить баннер</button>
+  </div>
+
+  <!-- Контейнер для баннера -->
+  <div class="banner-frame" id="bannerContainer">
+    <div id="adfox_171759750909741211"></div>
+  </div>
+
+  <!-- Блок для отладки -->
+  <div class="debug-info" id="debugOutput"></div>
+</div>
+
+<script>
+  // Функция для очистки баннера
+  function clearBanner() {
+    document.getElementById('bannerContainer').innerHTML =
+    '<div id="adfox_171759750909741211"></div>';
+    logMessage('Баннер очищен');
+  }
+
+  // Логирование в debug-блок
+  function logMessage(message) {
+    const debugDiv = document.getElementById('debugOutput');
+    debugDiv.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+  }
+
+  // Инициализация баннера
+  window.yaContextCb.push(() => {
+    try {
+      Ya.adfoxCode.create({
+        ownerId: 391204,
+        containerId: 'adfox_171759750909741211',
+        params: {
+          p1: 'dcokb',
+          p2: 'jaap',
+          pfc: 'dzokd',
+          pfb: 'bbgseq'
+        }
+      });
+      logMessage('Баннер успешно инициализирован');
+    } catch (error) {
+      logMessage(`Ошибка: ${error.message}`);
+    }
+  });
+</script>
+</body>
+</html>
