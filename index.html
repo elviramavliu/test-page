@@ -4,150 +4,44 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Тестовая площадка баннеров РСЯ</title>
-  
-  <!-- Обязательный код загрузчика Яндекс.Рекламы -->
+
   <script>window.yaContextCb = window.yaContextCb || []</script>
   <script src="https://yandex.ru/ads/system/context.js" async></script>
 
   <style>
-    /* Базовые стили страницы */
-    body {
-      margin: 0;
-      padding: 15px;
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      min-height: 100vh;
-    }
+    /* Все стили остаются без изменений */
+    body { margin: 0; padding: 15px; font-family: Arial; background: #f0f0f0; min-height: 100vh; }
+    .test-container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; }
+    .banner-frame { border: 2px dashed #ccc; margin: 20px 0; padding: 15px; min-height: 250px; background: #fff; }
+    .controls { margin: 20px 0; padding: 15px; background: #f8f8f8; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 10px; }
+    button { padding: 10px 20px; border: none; border-radius: 4px; background: #007bff; color: white; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #0056b3; }
+    .debug-info { color: #666; font-size: 0.9em; margin-top: 15px; padding: 10px; background: #f8f8f8; border-radius: 4px; max-height: 200px; overflow-y: auto; }
 
-    /* Основной контейнер */
-    .test-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      border-radius: 8px;
-    }
-
-    /* Область для баннеров */
-    .banner-frame {
-      border: 2px dashed #ccc;
-      margin: 20px 0;
-      padding: 15px;
-      min-height: 250px;
-      background: #fff;
-      position: relative;
-    }
-
-    /* Панель управления */
-    .controls {
-      margin: 20px 0;
-      padding: 15px;
-      background: #f8f8f8;
-      border-radius: 6px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    /* Стили кнопок */
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
-
-    /* Блок отладки */
-    .debug-info {
-      color: #666;
-      font-size: 0.9em;
-      margin-top: 15px;
-      padding: 10px;
-      background: #f8f8f8;
-      border-radius: 4px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    /* Мобильная адаптация */
     @media (max-width: 768px) {
-      .test-container {
-        padding: 10px;
-      }
-      
-      .banner-frame {
-        margin: 10px 0;
-        min-height: 200px;
-      }
-      
-      button {
-        width: 100%;
-        margin: 5px 0;
-      }
+      .test-container { padding: 10px; }
+      .banner-frame { margin: 10px 0; min-height: 200px; }
+      button { width: 100%; margin: 5px 0; }
     }
 
-    /* Стили формы */
-    .banner-form {
-      margin: 15px 0;
-      padding: 15px;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-    }
-
-    .form-row {
-      margin: 10px 0;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .param-group {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 10px;
-      width: 100%;
-    }
-
-    .param-input {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .param-input label {
-      font-size: 0.8em;
-      color: #666;
-      margin-bottom: 3px;
-    }
-
-    input[type="text"] {
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      width: 100%;
-    }
+    .banner-form { margin: 15px 0; padding: 15px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
+    .form-row { margin: 10px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+    .param-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; width: 100%; }
+    .param-input { display: flex; flex-direction: column; }
+    .param-input label { font-size: 0.8em; color: #666; margin-bottom: 3px; }
+    input[type="text"] { padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; }
   </style>
 </head>
 <body>
 <div class="test-container">
   <h1>Тестовая площадка баннеров РСЯ</h1>
 
-  <!-- Панель управления -->
   <div class="controls">
-    <button onclick="location.reload()">Перезагрузить</button>
+    <button onclick="softReload()">Перезагрузить</button>
     <button onclick="clearBanner()">Очистить</button>
     <button onclick="showForm()">Добавить баннер</button>
   </div>
 
-  <!-- Форма для ввода параметров -->
   <div class="banner-form" id="bannerForm" style="display: none;">
     <div class="form-row">
       <div class="param-group">
@@ -161,7 +55,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="form-row">
       <div class="param-group">
         <div class="param-input">
@@ -189,23 +83,28 @@
     </div>
   </div>
 
-  <!-- Контейнер для баннеров -->
-  <div class="banner-frame" id="bannerContainer">
-    <!-- 
-      Для добавления баннера по умолчанию раскомментируйте:
-      <div id="adfox_171759750909741211"></div> 
-    -->
-  </div>
-
-  <!-- Консоль отладки -->
+  <div class="banner-frame" id="bannerContainer"></div>
   <div class="debug-info" id="debugOutput"></div>
 </div>
 
 <script>
-  // Системные переменные
   let bannerCounter = 1;
+  let currentBanners = [];
 
-  // Управление интерфейсом
+  // Инициализация формы
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedData = sessionStorage.getItem('bannerData');
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        data.forEach(params => createBanner(params, false));
+        logMessage('🔄 Состояние восстановлено');
+      } catch(e) {
+        logMessage('❌ Ошибка восстановления');
+      }
+    }
+  });
+
   function showForm() {
     document.getElementById('bannerForm').style.display = 'block';
   }
@@ -224,7 +123,6 @@
     document.getElementById('paramPfb').value = '';
   }
 
-  // Основная логика
   function addNewBanner() {
     const params = {
       ownerId: document.getElementById('ownerId').value,
@@ -236,15 +134,20 @@
     };
 
     if (!params.ownerId) {
-      alert('Поле Owner ID обязательно для заполнения');
+      alert('Введите Owner ID');
       return;
     }
 
-    const newBanner = document.createElement('div');
-    newBanner.id = params.containerId;
-
     clearBanner();
-    document.getElementById('bannerContainer').appendChild(newBanner);
+    createBanner(params);
+    saveState();
+    hideForm();
+  }
+
+  function createBanner(params, log = true) {
+    const banner = document.createElement('div');
+    banner.id = params.containerId;
+    document.getElementById('bannerContainer').appendChild(banner);
 
     window.yaContextCb.push(() => {
       try {
@@ -258,50 +161,37 @@
             pfb: params.pfb || 'bbgseq'
           }
         });
-        logMessage(`✅ Баннер #${bannerCounter} создан: ${JSON.stringify(params)}`);
-        bannerCounter++;
-      } catch (error) {
+        currentBanners.push(params);
+        if(log) logMessage(`✅ Баннер #${bannerCounter++} создан`);
+      } catch(error) {
         logMessage(`❌ Ошибка: ${error.message}`);
       }
     });
-
-    hideForm();
   }
 
   function clearBanner() {
     document.getElementById('bannerContainer').innerHTML = '';
+    currentBanners = [];
+    sessionStorage.removeItem('bannerData');
     logMessage('⚠️ Все баннеры удалены');
   }
 
-  function logMessage(message) {
-    const debugDiv = document.getElementById('debugOutput');
-    const entry = document.createElement('div');
-    entry.innerHTML = `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
-    debugDiv.appendChild(entry);
-    debugDiv.scrollTop = debugDiv.scrollHeight;
+  function softReload() {
+    const temp = [...currentBanners];
+    clearBanner();
+    setTimeout(() => temp.forEach(p => createBanner(p)), 100);
+    logMessage('🔄 Страница обновлена');
   }
 
-  /* 
-    Для добавления баннера по умолчанию раскомментируйте:
-    
-  window.yaContextCb.push(() => {
-    try {
-      Ya.adfoxCode.create({
-        ownerId: 391204,
-        containerId: 'adfox_171759750909741211',
-        params: {
-          p1: 'dcokb',
-          p2: 'jaap',
-          pfc: 'dzokd',
-          pfb: 'bbgseq'
-        }
-      });
-      logMessage('🎉 Демо-баннер успешно загружен');
-    } catch (error) {
-      logMessage(`⛔ Ошибка инициализации: ${error.message}`);
-    }
-  });
-  */
+  function saveState() {
+    sessionStorage.setItem('bannerData', JSON.stringify(currentBanners));
+  }
+
+  function logMessage(message) {
+    const debug = document.getElementById('debugOutput');
+    debug.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+    debug.scrollTop = debug.scrollHeight;
+  }
 </script>
 </body>
 </html>
