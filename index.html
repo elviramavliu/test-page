@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Тестовая площадка баннеров РСЯ</title>
-
+  
   <!-- Обязательный код загрузчика Яндекс.Рекламы -->
   <script>window.yaContextCb = window.yaContextCb || []</script>
   <script src="https://yandex.ru/ads/system/context.js" async></script>
@@ -82,12 +82,12 @@
       .test-container {
         padding: 10px;
       }
-
+      
       .banner-frame {
         margin: 10px 0;
         min-height: 200px;
       }
-
+      
       button {
         width: 100%;
         margin: 5px 0;
@@ -161,7 +161,7 @@
         </div>
       </div>
     </div>
-
+    
     <div class="form-row">
       <div class="param-group">
         <div class="param-input">
@@ -191,7 +191,10 @@
 
   <!-- Контейнер для баннеров -->
   <div class="banner-frame" id="bannerContainer">
-    <div id="adfox_171759750909741211"></div>
+    <!-- 
+      Для добавления баннера по умолчанию раскомментируйте:
+      <div id="adfox_171759750909741211"></div> 
+    -->
   </div>
 
   <!-- Консоль отладки -->
@@ -278,7 +281,9 @@
     debugDiv.scrollTop = debugDiv.scrollHeight;
   }
 
-  // Инициализация демо-баннера
+  /* 
+    Для добавления баннера по умолчанию раскомментируйте:
+    
   window.yaContextCb.push(() => {
     try {
       Ya.adfoxCode.create({
@@ -296,6 +301,7 @@
       logMessage(`⛔ Ошибка инициализации: ${error.message}`);
     }
   });
+  */
 </script>
 </body>
 </html>
