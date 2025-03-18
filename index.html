@@ -2,50 +2,122 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <!-- Viewport для адаптивности на мобильных устройствах -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Тестовая площадка баннеров</title>
+
+  <!-- Подключение скрипта Яндекс.Рекламы -->
   <script>window.yaContextCb = window.yaContextCb || []</script>
   <script src="https://yandex.ru/ads/system/context.js" async></script>
+
   <style>
-    /* Упрощенные стили для тестовой среды */
+    /* Основные стили страницы */
     body {
       margin: 0;
-      padding: 20px;
+      padding: 15px;
       font-family: Arial, sans-serif;
       background: #f0f0f0;
+      min-height: 100vh; /* Минимальная высота на весь экран */
     }
 
+    /* Контейнер для контента */
     .test-container {
-      max-width: 1200px;
-      margin: 0 auto;
+      max-width: 1200px; /* Ограничение ширины для десктопов */
+      margin: 0 auto; /* Центрирование */
       background: white;
       padding: 20px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
     }
 
+    /* Область для размещения баннеров */
     .banner-frame {
-      border: 2px dashed #ccc;
+      border: 2px dashed #ccc; /* Пунктирная граница */
       margin: 20px 0;
       padding: 15px;
-      min-height: 300px;
+      min-height: 250px; /* Минимальная высота области */
       background: #fff;
+      position: relative;
     }
 
+    /* Панель управления */
     .controls {
       margin: 20px 0;
       padding: 15px;
       background: #f8f8f8;
+      border-radius: 6px;
+      display: flex;
+      flex-wrap: wrap; /* Перенос кнопок на мобильных */
+      gap: 10px; /* Расстояние между кнопками */
     }
 
+    /* Стили кнопок */
     button {
-      padding: 8px 15px;
-      margin-right: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff; /* Основной цвет */
+      color: white;
       cursor: pointer;
+      transition: 0.3s; /* Плавное изменение цвета */
     }
 
+    /* Эффект при наведении */
+    button:hover {
+      background: #0056b3;
+    }
+
+    /* Блок отладочной информации */
     .debug-info {
       color: #666;
       font-size: 0.9em;
       margin-top: 15px;
+      padding: 10px;
+      background: #f8f8f8;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto; /* Прокрутка при большом количестве сообщений */
+    }
+
+    /* Мобильная адаптация */
+    @media (max-width: 768px) {
+      .test-container {
+        padding: 10px; /* Уменьшенные отступы */
+      }
+
+      .banner-frame {
+        margin: 10px 0;
+        min-height: 200px; /* Меньшая высота для мобилок */
+      }
+
+      button {
+        width: 100%; /* Полная ширина кнопок */
+        margin: 5px 0;
+      }
+    }
+
+    /* Стили формы добавления баннера */
+    .banner-form {
+      margin: 15px 0;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    .form-row {
+      margin: 10px 0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap; /* Перенос полей на узких экранах */
+    }
+
+    input[type="text"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      flex: 1; /* Растягивание на доступное пространство */
+      min-width: 200px; /* Минимальная ширина поля */
     }
   </style>
 </head>
@@ -53,35 +125,121 @@
 <div class="test-container">
   <h1>Тестовая площадка баннеров</h1>
 
+  <!-- Панель управления -->
   <div class="controls">
-    <button onclick="location.reload()">Перезагрузить страницу</button>
-    <button onclick="clearBanner()">Очистить баннер</button>
+    <button onclick="location.reload()">Перезагрузить</button>
+    <button onclick="clearBanner()">Очистить</button>
+    <button onclick="showForm()">Добавить баннер</button>
   </div>
 
-  <!-- Контейнер для баннера -->
+  <!-- Форма для ввода параметров -->
+  <div class="banner-form" id="bannerForm" style="display: none;">
+    <div class="form-row">
+      <input type="text" id="ownerId" placeholder="Owner ID (например, 391204)">
+      <input type="text" id="containerId" placeholder="Container ID (например, adfox_123)">
+    </div>
+    <div class="form-row">
+      <button onclick="addNewBanner()">Создать</button>
+      <button onclick="hideForm()" style="background: #dc3545;">Отмена</button>
+    </div>
+  </div>
+
+  <!-- Основной контейнер для баннеров -->
   <div class="banner-frame" id="bannerContainer">
+    <!-- Стартовый баннер -->
     <div id="adfox_171759750909741211"></div>
   </div>
 
-  <!-- Блок для отладки -->
+  <!-- Консоль для отладки -->
   <div class="debug-info" id="debugOutput"></div>
 </div>
 
 <script>
-  // Функция для очистки баннера
-  function clearBanner() {
-    document.getElementById('bannerContainer').innerHTML =
-    '<div id="adfox_171759750909741211"></div>';
-    logMessage('Баннер очищен');
+  // ==============================================
+  // ОСНОВНАЯ ЛОГИКА ПРИЛОЖЕНИЯ
+  // ==============================================
+
+  let bannerCounter = 1; // Счетчик созданных баннеров
+
+  // Показать форму добавления
+  function showForm() {
+    document.getElementById('bannerForm').style.display = 'block';
   }
 
-  // Логирование в debug-блок
+  // Скрыть форму добавления
+  function hideForm() {
+    document.getElementById('bannerForm').style.display = 'none';
+    clearForm();
+  }
+
+  // Очистить поля формы
+  function clearForm() {
+    document.getElementById('ownerId').value = '';
+    document.getElementById('containerId').value = '';
+  }
+
+  // Основная функция создания баннера
+  function addNewBanner() {
+    const ownerId = document.getElementById('ownerId').value;
+    const containerId = document.getElementById('containerId').value || `adfox_${Date.now()}`;
+
+    // Валидация обязательного поля
+    if(!ownerId) {
+      alert('Введите Owner ID');
+      return;
+    }
+
+    // Создаем новый DOM-элемент
+    const newBanner = document.createElement('div');
+    newBanner.id = containerId;
+
+    // Очищаем предыдущий баннер
+    clearBanner();
+    document.getElementById('bannerContainer').appendChild(newBanner);
+
+    // Инициализация баннера через API Яндекс.Рекламы
+    window.yaContextCb.push(() => {
+      try {
+        Ya.adfoxCode.create({
+          ownerId: ownerId,
+          containerId: containerId,
+          params: {
+            p1: 'dcokb',
+            p2: 'jaap',
+            pfc: 'dzokd',
+            pfb: 'bbgseq'
+          }
+        });
+        logMessage(`Успешно создан баннер #${bannerCounter}: ${containerId}`);
+        bannerCounter++;
+      } catch (error) {
+        logMessage(`Ошибка: ${error.message}`);
+      }
+    });
+
+    hideForm();
+  }
+
+  // Очистка баннерной зоны
+  function clearBanner() {
+    document.getElementById('bannerContainer').innerHTML = '';
+    logMessage('Все баннеры удалены');
+  }
+
+  // Система логирования
   function logMessage(message) {
     const debugDiv = document.getElementById('debugOutput');
-    debugDiv.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+    const entry = document.createElement('div');
+    entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+    debugDiv.appendChild(entry);
+
+    // Автопрокрутка к новым сообщениям
+    debugDiv.scrollTop = debugDiv.scrollHeight;
   }
 
-  // Инициализация баннера
+  // ==============================================
+  // ИНИЦИАЛИЗАЦИЯ ПЕРВОГО БАННЕРА
+  // ==============================================
   window.yaContextCb.push(() => {
     try {
       Ya.adfoxCode.create({
@@ -94,9 +252,9 @@
           pfb: 'bbgseq'
         }
       });
-      logMessage('Баннер успешно инициализирован');
+      logMessage('Стартовый баннер успешно загружен');
     } catch (error) {
-      logMessage(`Ошибка: ${error.message}`);
+      logMessage(`Ошибка инициализации: ${error.message}`);
     }
   });
 </script>
