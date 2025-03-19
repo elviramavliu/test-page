@@ -9,26 +9,67 @@
   <script src="https://yandex.ru/ads/system/context.js" async></script>
 
   <style>
+    /* Основные стили */
     body { margin: 0; padding: 15px; font-family: Arial; background: #f0f0f0; min-height: 100vh; }
     .test-container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; }
     .banner-frame { border: 2px dashed #ccc; margin: 20px 0; padding: 15px; min-height: 250px; background: #fff; }
-    .controls { margin: 20px 0; padding: 15px; background: #f8f8f8; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .controls { margin: 20px 0; padding: 15px; background: #f8f8f8; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 10px; position: relative; }
     button { padding: 10px 20px; border: none; border-radius: 4px; background: #007bff; color: white; cursor: pointer; transition: 0.3s; }
     button:hover { background: #0056b3; }
     .debug-info { color: #666; font-size: 0.9em; margin-top: 15px; padding: 10px; background: #f8f8f8; border-radius: 4px; max-height: 200px; overflow-y: auto; }
-
     @media (max-width: 768px) {
       .test-container { padding: 10px; }
       .banner-frame { margin: 10px 0; min-height: 200px; }
       button { width: 100%; margin: 5px 0; }
     }
-
     .banner-form { margin: 15px 0; padding: 15px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
     .form-row { margin: 10px 0; display: flex; gap: 10px; flex-wrap: wrap; }
     .param-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; width: 100%; }
     .param-input { display: flex; flex-direction: column; }
     .param-input label { font-size: 0.8em; color: #666; margin-bottom: 3px; }
     input[type="text"] { padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; }
+
+    /* Стили направляющих */
+    .guidelines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+    }
+    .banner-bounds {
+      position: absolute;
+      border: 1px dashed rgba(0, 150, 255, 0.3);
+      background: rgba(0, 150, 255, 0.1);
+    }
+    .coordinate-info {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: white;
+      padding: 8px;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      font-size: 12px;
+      z-index: 10000;
+    }
+
+    /* Панель настроек направляющих */
+    .guidelines-settings {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      z-index: 10000;
+      display: none;
+    }
+    .guidelines-settings label { font-size: 12px; margin-right: 5px; }
   </style>
 </head>
 <body>
@@ -37,8 +78,26 @@
 
   <div class="controls">
     <button onclick="softReload()">Перезагрузить</button>
-    <button onclick="clearBanner()">Очистить</button>
+    <button onclick="confirmClearBanner()">Очистить</button>
     <button onclick="showForm()">Добавить баннер</button>
+    <button onclick="toggleGuidelines()" style="background: #28a745;">Линейка</button>
+    <button onclick="toggleGuidelinesSettings()" style="background: #6c757d;">Настройки</button>
+  </div>
+
+  <!-- Контейнер для направляющих -->
+  <div class="guidelines" id="guidelines"></div>
+
+  <!-- Панель настроек направляющих -->
+  <div class="guidelines-settings" id="guidelinesSettings">
+    <div>
+      <label for="gridColor">Цвет линий:</label>
+      <input type="color" id="gridColor" value="#ff0000">
+    </div>
+    <div>
+      <label for="lineThickness">Толщина линий:</label>
+      <input type="number" id="lineThickness" value="1" min="1" max="10">
+    </div>
+    <button onclick="applyGuidelinesSettings()">Применить</button>
   </div>
 
   <div class="banner-form" id="bannerForm" style="display: none;">
@@ -54,7 +113,6 @@
         </div>
       </div>
     </div>
-
     <div class="form-row">
       <div class="param-group">
         <div class="param-input">
@@ -87,7 +145,6 @@
         </div>
       </div>
     </div>
-
     <div class="form-row">
       <button onclick="addNewBanner()">Создать</button>
       <button onclick="hideForm()" style="background: #dc3545;">Отмена</button>
@@ -99,9 +156,47 @@
 </div>
 
 <script>
+  /******************** Утилиты ********************/
+  function formatTime(date) {
+    return date.toLocaleTimeString('ru-RU', { hour12: false });
+  }
+
+  function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+
+  // Конвертация HEX цвета в rgba с заданной прозрачностью
+  function hexToRgba(hex, opacity) {
+    let r = 0, g = 0, b = 0;
+    if(hex.length === 4) {
+      r = "0x" + hex[1] + hex[1];
+      g = "0x" + hex[2] + hex[2];
+      b = "0x" + hex[3] + hex[3];
+    } else if(hex.length === 7) {
+      r = "0x" + hex[1] + hex[2];
+      g = "0x" + hex[3] + hex[4];
+      b = "0x" + hex[5] + hex[6];
+    }
+    return "rgba(" + +r + "," + +g + "," + +b + "," + opacity + ")";
+  }
+
+  /******************** Глобальные переменные ********************/
   let bannerCounter = 1;
   let currentBanners = [];
+  let guidelinesVisible = false;
+  let guidelinesAnimationFrameID;
+  let guidelinesSettingsVisible = false;
+  // Конфигурация направляющих по умолчанию
+  let guidelinesConfig = {
+    color: "rgba(255, 0, 0, 0.5)",
+    thickness: 1
+  };
 
+  /******************** Инициализация ********************/
   document.addEventListener('DOMContentLoaded', () => {
     const savedData = sessionStorage.getItem('bannerData');
     if (savedData) {
@@ -113,8 +208,24 @@
         logMessage('❌ Ошибка восстановления');
       }
     }
+    window.addEventListener('resize', debounce(onResize, 200));
   });
 
+  function onResize() {
+    if(guidelinesVisible) {
+      updateGuidelines();
+    }
+  }
+
+  /******************** Функция логирования ********************/
+  function logMessage(message) {
+    const debug = document.getElementById('debugOutput');
+    const time = formatTime(new Date());
+    debug.innerHTML += `<div>${time}: ${message}</div>`;
+    debug.scrollTop = debug.scrollHeight;
+  }
+
+  /******************** Функции работы с баннерами ********************/
   function showForm() {
     document.getElementById('bannerForm').style.display = 'block';
   }
@@ -154,7 +265,8 @@
       return;
     }
 
-    clearBanner();
+    // При добавлении нового баннера очищаем без подтверждения
+    clearBanner(true);
     createBanner(params);
     saveState();
     hideForm();
@@ -163,6 +275,7 @@
   function createBanner(params, log = true) {
     const banner = document.createElement('div');
     banner.id = params.containerId;
+    banner.classList.add('banner-iframe-container');
     document.getElementById('bannerContainer').appendChild(banner);
 
     window.yaContextCb.push(() => {
@@ -182,22 +295,38 @@
         });
         currentBanners.push(params);
         if(log) logMessage(`✅ Баннер #${bannerCounter++} создан`);
+        if(guidelinesVisible) {
+          updateGuidelines();
+        }
       } catch(error) {
         logMessage(`❌ Ошибка: ${error.message}`);
       }
     });
   }
 
-  function clearBanner() {
+  // Функция с подтверждением удаления всех баннеров
+  function confirmClearBanner() {
+    if(confirm('Вы действительно хотите удалить все баннеры?')) {
+      clearBanner();
+    }
+  }
+
+  function clearBanner(skipConfirm = false) {
+    if(!skipConfirm && !confirm('Вы действительно хотите удалить все баннеры?')) {
+      return;
+    }
     document.getElementById('bannerContainer').innerHTML = '';
     currentBanners = [];
     sessionStorage.removeItem('bannerData');
+    if(guidelinesVisible) {
+      document.getElementById('guidelines').innerHTML = '';
+    }
     logMessage('⚠️ Все баннеры удалены');
   }
 
   function softReload() {
     const temp = [...currentBanners];
-    clearBanner();
+    clearBanner(true);
     setTimeout(() => temp.forEach(p => createBanner(p)), 100);
     logMessage('🔄 Страница обновлена');
   }
@@ -206,10 +335,116 @@
     sessionStorage.setItem('bannerData', JSON.stringify(currentBanners));
   }
 
-  function logMessage(message) {
-    const debug = document.getElementById('debugOutput');
-    debug.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
-    debug.scrollTop = debug.scrollHeight;
+  /******************** Функции направляющих ********************/
+  function toggleGuidelines() {
+    guidelinesVisible = !guidelinesVisible;
+    const guidelines = document.getElementById('guidelines');
+    guidelines.style.display = guidelinesVisible ? 'block' : 'none';
+
+    if(guidelinesVisible) {
+      updateGuidelines();
+      startGuidelinesAnimation();
+      logMessage('📏 Режим измерения активирован');
+    } else {
+      stopGuidelinesAnimation();
+      logMessage('📏 Режим измерения деактивирован');
+    }
+  }
+
+  function updateGuidelines() {
+    const container = document.getElementById('bannerContainer');
+    const containerRect = container.getBoundingClientRect();
+    const guidelines = document.getElementById('guidelines');
+    guidelines.innerHTML = '';
+
+    // Центральные линии (вертикальная и горизонтальная)
+    const vLine = document.createElement('div');
+    vLine.style.position = 'absolute';
+    vLine.style.width = `${guidelinesConfig.thickness}px`;
+    vLine.style.background = guidelinesConfig.color;
+    vLine.style.height = `${containerRect.height}px`;
+    vLine.style.left = `${containerRect.left + containerRect.width / 2}px`;
+    vLine.style.top = `${containerRect.top}px`;
+
+    const hLine = document.createElement('div');
+    hLine.style.position = 'absolute';
+    hLine.style.height = `${guidelinesConfig.thickness}px`;
+    hLine.style.background = guidelinesConfig.color;
+    hLine.style.width = `${containerRect.width}px`;
+    hLine.style.left = `${containerRect.left}px`;
+    hLine.style.top = `${containerRect.top + containerRect.height / 2}px`;
+
+    guidelines.appendChild(vLine);
+    guidelines.appendChild(hLine);
+
+    // Сетка: вертикальные линии с шагом 100px
+    const verticalSpacing = 100;
+    for(let x = containerRect.left; x < containerRect.right; x += verticalSpacing) {
+      const gridLine = document.createElement('div');
+      gridLine.style.position = 'absolute';
+      gridLine.style.width = `${guidelinesConfig.thickness}px`;
+      gridLine.style.background = guidelinesConfig.color;
+      gridLine.style.height = `${containerRect.height}px`;
+      gridLine.style.left = `${x}px`;
+      gridLine.style.top = `${containerRect.top}px`;
+      gridLine.style.opacity = 0.3;
+      guidelines.appendChild(gridLine);
+    }
+
+    // Сетка: горизонтальные линии с шагом 100px
+    const horizontalSpacing = 100;
+    for(let y = containerRect.top; y < containerRect.bottom; y += horizontalSpacing) {
+      const gridLine = document.createElement('div');
+      gridLine.style.position = 'absolute';
+      gridLine.style.height = `${guidelinesConfig.thickness}px`;
+      gridLine.style.background = guidelinesConfig.color;
+      gridLine.style.width = `${containerRect.width}px`;
+      gridLine.style.left = `${containerRect.left}px`;
+      gridLine.style.top = `${y}px`;
+      gridLine.style.opacity = 0.3;
+      guidelines.appendChild(gridLine);
+    }
+
+    // Границы для каждого баннера
+    const banners = container.getElementsByClassName('banner-iframe-container');
+    Array.from(banners).forEach(banner => {
+      const bRect = banner.getBoundingClientRect();
+      const bounds = document.createElement('div');
+      bounds.className = 'banner-bounds';
+      bounds.style.width = `${bRect.width}px`;
+      bounds.style.height = `${bRect.height}px`;
+      bounds.style.left = `${bRect.left}px`;
+      bounds.style.top = `${bRect.top}px`;
+      guidelines.appendChild(bounds);
+    });
+  }
+
+  function startGuidelinesAnimation() {
+    function animate() {
+      if(guidelinesVisible) {
+        updateGuidelines();
+        guidelinesAnimationFrameID = requestAnimationFrame(animate);
+      }
+    }
+    guidelinesAnimationFrameID = requestAnimationFrame(animate);
+  }
+
+  function stopGuidelinesAnimation() {
+    cancelAnimationFrame(guidelinesAnimationFrameID);
+  }
+
+  /******************** Панель настроек направляющих ********************/
+  function toggleGuidelinesSettings() {
+    guidelinesSettingsVisible = !guidelinesSettingsVisible;
+    document.getElementById('guidelinesSettings').style.display = guidelinesSettingsVisible ? 'block' : 'none';
+  }
+
+  function applyGuidelinesSettings() {
+    const colorInput = document.getElementById('gridColor').value;
+    const thicknessInput = document.getElementById('lineThickness').value;
+    guidelinesConfig.color = hexToRgba(colorInput, 0.5);
+    guidelinesConfig.thickness = parseInt(thicknessInput, 10);
+    updateGuidelines();
   }
 </script>
 </body>
