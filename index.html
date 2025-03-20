@@ -12,14 +12,15 @@
     /* Основные стили */
     body { margin: 0; padding: 15px; font-family: Arial; background: #f0f0f0; min-height: 100vh; }
     .test-container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; }
-    .banner-frame { border: 2px dashed #ccc; margin: 20px 0; padding: 15px; min-height: 250px; background: #fff; }
+    /* Убрана фиксированная минимальная высота, чтобы контейнер адаптировался под размер баннера */
+    .banner-frame { border: 2px dashed #ccc; margin: 20px 0; padding: 15px; background: #fff; }
     .controls { margin: 20px 0; padding: 15px; background: #f8f8f8; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 10px; position: relative; }
     button { padding: 10px 20px; border: none; border-radius: 4px; background: #007bff; color: white; cursor: pointer; transition: 0.3s; }
     button:hover { background: #0056b3; }
     .debug-info { color: #666; font-size: 0.9em; margin-top: 15px; padding: 10px; background: #f8f8f8; border-radius: 4px; max-height: 200px; overflow-y: auto; }
     @media (max-width: 768px) {
       .test-container { padding: 10px; }
-      .banner-frame { margin: 10px 0; min-height: 200px; }
+      .banner-frame { margin: 10px 0; }
       button { width: 100%; margin: 5px 0; }
     }
     .banner-form { margin: 15px 0; padding: 15px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
@@ -27,7 +28,7 @@
     .param-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; width: 100%; }
     .param-input { display: flex; flex-direction: column; }
     .param-input label { font-size: 0.8em; color: #666; margin-bottom: 3px; }
-    input[type="text"] { padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; }
+    input[type="text"], select, input[type="number"] { padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; }
 
     /* Стили направляющих */
     .guidelines {
@@ -145,6 +146,40 @@
         </div>
       </div>
     </div>
+    <!-- Новые поля для расширенного функционала -->
+    <div class="form-row">
+      <div class="param-group">
+        <div class="param-input">
+          <label>Тип баннера</label>
+          <select id="bannerType">
+            <option value="">Стандартный</option>
+            <option value="fullscreen">Fullscreen</option>
+            <option value="floorAd">Floor Ad</option>
+            <option value="topAd">Top Ad</option>
+          </select>
+        </div>
+        <div class="param-input">
+          <label>Платформа</label>
+          <select id="bannerPlatform">
+            <option value="">-- Выберите платформу --</option>
+            <option value="desktop">Desktop</option>
+            <option value="touch">Touch</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="param-group">
+        <div class="param-input">
+          <label>Темная тема</label>
+          <input type="checkbox" id="darkTheme">
+        </div>
+        <div class="param-input">
+          <label>Дополнительные классы (через запятую)</label>
+          <input type="text" id="additionalClasses" placeholder="например, dark, custom">
+        </div>
+      </div>
+    </div>
     <div class="form-row">
       <button onclick="addNewBanner()">Создать</button>
       <button onclick="hideForm()" style="background: #dc3545;">Отмена</button>
@@ -245,6 +280,10 @@
     document.getElementById('paramPuid1').value = '';
     document.getElementById('paramPuid2').value = '';
     document.getElementById('paramPuid3').value = '';
+    document.getElementById('bannerType').value = '';
+    document.getElementById('bannerPlatform').value = '';
+    document.getElementById('darkTheme').checked = false;
+    document.getElementById('additionalClasses').value = '';
   }
 
   function addNewBanner() {
@@ -257,7 +296,11 @@
       pfb: document.getElementById('paramPfb').value,
       puid1: document.getElementById('paramPuid1').value,
       puid2: document.getElementById('paramPuid2').value,
-      puid3: document.getElementById('paramPuid3').value
+      puid3: document.getElementById('paramPuid3').value,
+      bannerType: document.getElementById('bannerType').value,
+      bannerPlatform: document.getElementById('bannerPlatform').value,
+      darkTheme: document.getElementById('darkTheme').checked,
+      additionalClasses: document.getElementById('additionalClasses').value
     };
 
     if (!params.ownerId) {
@@ -280,7 +323,7 @@
 
     window.yaContextCb.push(() => {
       try {
-        Ya.adfoxCode.create({
+        let adOptions = {
           ownerId: params.ownerId,
           containerId: params.containerId,
           params: {
@@ -292,7 +335,31 @@
             puid2: params.puid2 || '',
             puid3: params.puid3 || ''
           }
-        });
+        };
+
+        if(params.bannerType) {
+          adOptions.type = params.bannerType;
+        }
+
+        if(params.bannerPlatform) {
+          adOptions.platform = params.bannerPlatform;
+        }
+
+        let insertionCodeParams = {};
+        if(params.darkTheme) {
+          insertionCodeParams.darkTheme = true;
+        }
+        if(params.additionalClasses) {
+          let classes = params.additionalClasses.split(',').map(s => s.trim()).filter(s => s);
+          if(classes.length > 0) {
+            insertionCodeParams.additionalClasses = classes;
+          }
+        }
+        if(Object.keys(insertionCodeParams).length > 0) {
+          adOptions.insertionCodeParams = insertionCodeParams;
+        }
+
+        Ya.adfoxCode.create(adOptions);
         currentBanners.push(params);
         if(log) logMessage(`✅ Баннер #${bannerCounter++} создан`);
         if(guidelinesVisible) {
